@@ -10,6 +10,13 @@ import { replyWithUserFacingError, safeReplyInteraction } from "../../../discord
 import { runHandler } from "../../../shared/handler/run-handler.js";
 import { UserFacingError } from "../../../shared/errors/user-facing.error.js";
 
+function resolveSpeakerName(interaction: ChatInputCommandInteraction): string {
+  if (interaction.inGuild() && interaction.member && "displayName" in interaction.member) {
+    return interaction.member.displayName;
+  }
+  return interaction.user.globalName ?? interaction.user.username;
+}
+
 export async function handleTranslateSlash(
   interaction: ChatInputCommandInteraction,
   ctx: AppContext,
@@ -40,7 +47,7 @@ export async function handleTranslateSlash(
           embeds: [
             translationResultEmbed(result, {
               mode: "slash",
-              actorTag: interaction.user.tag,
+              speakerName: resolveSpeakerName(interaction),
             }),
           ],
           ephemeral: true,

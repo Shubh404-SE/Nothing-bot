@@ -4,7 +4,6 @@ import type { AppContext } from "../../../core/app-context.js";
 import { translationResultEmbed } from "../../../discord/embeds.js";
 import { safeReplyMessage } from "../../../discord/replies.js";
 import { resolveReactionFlag } from "../../../utils/emoji/resolve-reaction-flag.js";
-import { getLanguageFlagEmoji } from "../language-display.js";
 import { resolveLanguageFromFlagCountry } from "../language-map.js";
 import { shouldIgnoreMessageForTranslation } from "../translation.policy.js";
 
@@ -67,15 +66,17 @@ export async function handleTranslateReaction(
     return;
   }
 
-  const reactionFlag =
-    resolved.countryCode === "US" ? "🌐" : (reaction.emoji.name ?? getLanguageFlagEmoji(targetLang));
+  const author = message.author.partial ? await message.author.fetch() : message.author;
+  const speakerName =
+    author.displayName && message.guild
+      ? author.displayName
+      : author.username;
 
   await safeReplyMessage(message, {
     embeds: [
       translationResultEmbed(result, {
         mode: "reaction",
-        actorTag: user.tag,
-        sourceFlag: reactionFlag,
+        speakerName,
       }),
     ],
     allowedMentions: { repliedUser: false },

@@ -1,99 +1,62 @@
 import { EmbedBuilder } from "discord.js";
 
-import {
-  getLanguageDisplayName,
-  getLanguageEmbedColor,
-  getLanguageFlagEmoji,
-} from "../modules/translation/language-display.js";
+import { getLanguageDisplayName } from "../modules/translation/language-display.js";
 import type { TranslationResponse } from "../types/translation.types.js";
+
+/** Left accent bar — similar to compact translation bots */
+const COMPACT_ACCENT_COLOR = 0x57f287;
 
 export type TranslationEmbedContext = {
   mode: "slash" | "reaction";
-  actorTag?: string;
-  sourceFlag?: string;
+  /** Display name on the source line, e.g. message author or command user */
+  speakerName: string;
 };
 
+/**
+ * Compact single embed: two lines (source + translation), colored left bar.
+ * Example:
+ *   Doctor(English): how can we talk??
+ *   Hindi: हम कैसे बात कर सकते हैं?
+ */
 export function translationResultEmbed(
   result: TranslationResponse,
   context: TranslationEmbedContext,
 ): EmbedBuilder {
-  const targetFlag = getLanguageFlagEmoji(result.targetLang);
-  const targetName = getLanguageDisplayName(result.targetLang);
-  const color = getLanguageEmbedColor(result.targetLang);
+  const sourceLabel = result.detectedSourceLang
+    ? getLanguageDisplayName(result.detectedSourceLang)
+    : "Unknown";
+  const targetLabel = getLanguageDisplayName(result.targetLang);
 
-  const title =
-    context.mode === "reaction" && context.sourceFlag
-      ? `${context.sourceFlag} → ${targetFlag} ${targetName}`
-      : `${targetFlag} ${targetName}`;
+  const speaker = sanitizeSpeakerName(context.speakerName);
+  const original = truncateLine(result.originalText, 900);
+  const translated = truncateLine(result.translatedText, 1500);
 
-  const embed = new EmbedBuilder()
-    .setColor(color)
-    .setTitle(title)
-    .setDescription(formatTranslationBlock(result.translatedText))
-    .addFields({
-      name: "Original",
-      value: formatQuoteBlock(result.originalText),
-      inline: false,
-    });
-
-  const footerParts: string[] = [];
-  if (result.detectedSourceLang) {
-    const sourceFlag = getLanguageFlagEmoji(result.detectedSourceLang);
-    const sourceName = getLanguageDisplayName(result.detectedSourceLang);
-    footerParts.push(`Detected: ${sourceFlag} ${sourceName}`);
-  }
-  if (context.mode === "reaction") {
-    footerParts.push("React with a country flag to translate");
-  } else {
-    footerParts.push("Nothing Bot · /translate");
-  }
-  if (context.actorTag) {
-    footerParts.push(`Requested by ${context.actorTag}`);
-  }
-
-  embed.setFooter({ text: footerParts.join(" · ") });
+  const lines = [`${speaker}(${sourceLabel}): ${original}`, `${targetLabel}: ${translated}`];
 
   if (result.truncated) {
-    embed.addFields({
-      name: "Note",
-      value: "Translation was shortened to fit Discord limits.",
-      inline: false,
-    });
+    lines.push("_Text shortened to fit Discord limits._");
   }
 
-  return embed;
+  return new EmbedBuilder().setColor(COMPACT_ACCENT_COLOR).setDescription(lines.join("\n"));
 }
 
-export function errorEmbed(message: string, title = "Translation unavailable"): EmbedBuilder {
-  return new EmbedBuilder()
-    .setColor(0xed4245)
-    .setTitle(`⚠️ ${title}`)
-    .setDescription(message);
+export function errorEmbed(message: string): EmbedBuilder {
+  return new EmbedBuilder().setColor(0xed4245).setDescription(`⚠️ ${message}`);
 }
 
 export function featureDisabledEmbed(featureName: string): EmbedBuilder {
-  return errorEmbed(`${featureName} is currently disabled.`, "Feature unavailable");
+  return errorEmbed(`${featureName} is currently disabled.`);
 }
 
-function formatQuoteBlock(text: string): string {
-  const trimmed = truncateField(text.trim(), 1000);
-  if (!trimmed) {
-    return "_Empty_";
+function sanitizeSpeakerName(name: string): string {
+  const trimmed = name.trim().slice(0, 32);
+  return trimmed || "User";
+}
+
+function truncateLine(text: string, max: number): string {
+  const singleLine = text.trim().replace(/\n+/g, " ");
+  if (singleLine.length <= max) {
+    return singleLine || "—";
   }
-  return trimmed
-    .split("\n")
-    .map((line) => `> ${line}`)
-    .join("\n");
-}
-
-function formatTranslationBlock(text: string): string {
-  const trimmed = truncateField(text.trim(), 3800);
-  return `**${trimmed}**`;
-}
-
-function truncateField(value: string, max: number): string {
-  if (value.length <= max) {
-    return value;
-  }
-  return `${value.slice(0, max - 3)}...`;
+  return `${singleLine.slice(0, max - 1)}…`;
 }
