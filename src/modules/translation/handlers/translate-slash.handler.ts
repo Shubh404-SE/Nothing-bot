@@ -37,7 +37,12 @@ export async function handleTranslateSlash(
         });
 
         await safeReplyInteraction(interaction, {
-          embeds: [translationResultEmbed(result)],
+          embeds: [
+            translationResultEmbed(result, {
+              mode: "slash",
+              actorTag: interaction.user.tag,
+            }),
+          ],
           ephemeral: true,
         });
       } catch (error) {

@@ -22,8 +22,10 @@ Production-oriented Discord.js bot (translation MVP).
 
 ## Features
 
-- `/translate language:hi text:"Hello"` — slash command (ephemeral reply)
-- React with a country flag (e.g. 🇮🇳) on a message — translates to mapped language
+- `/translate` — pick a language from the menu (no default US flag; English is 🌐)
+- React with a **country flag** on a message (e.g. 🇮🇳) — bot translates and replies (Nothing Bot does not add reactions to your messages)
+
+After changing slash commands, run `npm run deploy-commands` again.
 
 ## Architecture
 
