@@ -17,7 +17,8 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "deploy-commands": "tsx scripts/deploy-commands.ts"
+    "deploy-commands": "tsx scripts/deploy-commands.ts",
+    "clear-guild-commands": "tsx scripts/clear-guild-commands.ts"
   },
   "keywords": [],
   "author": "",
