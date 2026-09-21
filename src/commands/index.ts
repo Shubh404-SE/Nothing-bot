@@ -9,4 +9,10 @@ export function registerAllCommands(ctx: AppServices): CommandRegistry {
 }
 
 export { CommandRegistry } from "./registry.js";
-export type { SlashCommandDefinition, SlashCommandHandler } from "./types.js";
+export type {
+  CommandDefinition,
+  MessageContextMenuCommandDefinition,
+  MessageContextMenuCommandHandler,
+  SlashCommandDefinition,
+  SlashCommandHandler,
+} from "./types.js";

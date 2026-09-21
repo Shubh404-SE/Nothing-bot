@@ -2,6 +2,7 @@ import type { MessageReaction, User } from "discord.js";
 
 import type { AppContext } from "../../../core/app-context.js";
 import { translationResultEmbed } from "../../../discord/embeds.js";
+import { resolveMessageSpeakerName } from "../../../discord/message-speaker.js";
 import { safeReplyMessage } from "../../../discord/replies.js";
 import { resolveReactionFlag } from "../../../utils/emoji/resolve-reaction-flag.js";
 import { resolveLanguageFromFlagCountry } from "../language-map.js";
@@ -66,11 +67,10 @@ export async function handleTranslateReaction(
     return;
   }
 
-  const author = message.author.partial ? await message.author.fetch() : message.author;
-  const speakerName =
-    author.displayName && message.guild
-      ? author.displayName
-      : author.username;
+  if (message.author.partial) {
+    await message.author.fetch();
+  }
+  const speakerName = resolveMessageSpeakerName(message);
 
   await safeReplyMessage(message, {
     embeds: [

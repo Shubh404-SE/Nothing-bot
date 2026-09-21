@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 export function shouldIgnoreMessageForTranslation(params: {
   content: string;
   authorIsBot: boolean;
@@ -28,6 +30,10 @@ export function buildSlashDedupeKey(userId: string, textHash: string, targetLang
   return `${userId}:${textHash}:${targetLang}`;
 }
 
+export function buildSlashCooldownKey(userId: string, guildId: string | null): string {
+  return `${guildId ?? "dm"}:${userId}:slash-translate`;
+}
+
 export function simpleTextHash(text: string): string {
   let hash = 0;
   for (let i = 0; i < text.length; i += 1) {
@@ -35,4 +41,14 @@ export function simpleTextHash(text: string): string {
     hash |= 0;
   }
   return Math.abs(hash).toString(36);
+}
+
+/**
+ * Cryptographic hash used only for the translation-result cache key, where a
+ * collision would silently serve a different message's translation. The
+ * non-crypto `simpleTextHash` above stays fine for dedupe locks, where a
+ * false collision just means "treated as a duplicate, retry".
+ */
+export function sha1TextHash(text: string): string {
+  return createHash("sha1").update(text, "utf8").digest("hex");
 }

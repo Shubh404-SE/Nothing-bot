@@ -71,11 +71,7 @@ export function getLanguageFlagEmoji(code: string): string {
 
 export function getLanguageEmbedColor(code: string): number {
   const normalized = code.trim().toLowerCase();
-  return (
-    LANGUAGE_COLORS[normalized] ??
-    LANGUAGE_COLORS[normalized.split("-")[0] ?? ""] ??
-    0x5865f2
-  );
+  return LANGUAGE_COLORS[normalized] ?? LANGUAGE_COLORS[normalized.split("-")[0] ?? ""] ?? 0x5865f2;
 }
 
 /** Slash command choices — English last; no 🇺🇸 default. */

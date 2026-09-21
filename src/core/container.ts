@@ -1,10 +1,15 @@
+import path from "node:path";
+
 import { loadConfig } from "../config/index.js";
+import { InMemoryTranslationCacheRepository } from "../database/repositories/in-memory-translation-cache.repository.js";
 import { InMemoryTranslationStateRepository } from "../database/repositories/in-memory-translation-state.repository.js";
+import { JsonFilePreferenceRepository } from "../database/repositories/json-file-preference.repository.js";
 import { MemoryCacheProvider } from "../providers/cache/memory-cache.provider.js";
 import { GoogleTranslateProvider } from "../providers/translation/google-translate.provider.js";
 import { TimeoutTranslationProvider } from "../providers/translation/timeout-translation.provider.js";
 import { CacheService } from "../services/cache/cache.service.js";
 import { FeatureFlagService } from "../services/feature-flags/feature-flag.service.js";
+import { PreferenceService } from "../services/preferences/preference.service.js";
 import { TranslationConcurrencyLimiter } from "../services/translation/translation-concurrency-limiter.js";
 import { TranslationService } from "../services/translation/translation.service.js";
 import { NoopMetrics } from "../telemetry/noop-metrics.js";
@@ -22,6 +27,7 @@ export function createServices(): AppServices {
   const cacheProvider = new MemoryCacheProvider(config.env.CACHE_MAX_ENTRIES);
   const cacheService = new CacheService(cacheProvider);
   const translationStateRepository = new InMemoryTranslationStateRepository(cacheService);
+  const translationCacheRepository = new InMemoryTranslationCacheRepository(cacheService);
 
   const innerProvider = new GoogleTranslateProvider();
   const translationProvider = new TimeoutTranslationProvider(
@@ -34,11 +40,16 @@ export function createServices(): AppServices {
   const translationService = new TranslationService(
     translationProvider,
     translationStateRepository,
+    translationCacheRepository,
     limiter,
     metrics,
     logger,
     config,
   );
+
+  const preferenceFilePath = path.join(config.env.DATA_DIR, "preferences.json");
+  const preferenceRepository = new JsonFilePreferenceRepository(preferenceFilePath, logger);
+  const preferenceService = new PreferenceService(preferenceRepository);
 
   return {
     config,
@@ -46,5 +57,6 @@ export function createServices(): AppServices {
     metrics,
     featureFlags,
     translationService,
+    preferenceService,
   };
 }

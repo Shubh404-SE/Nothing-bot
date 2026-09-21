@@ -1,9 +1,11 @@
 import {
   DiscordAPIError,
   type Interaction,
+  type InteractionEditReplyOptions,
   type Message,
   type MessageReplyOptions,
   type InteractionReplyOptions,
+  type RepliableInteraction,
 } from "discord.js";
 
 import { UserFacingError } from "../shared/errors/user-facing.error.js";
@@ -57,6 +59,35 @@ export async function replyWithUserFacingError(
   await safeReplyInteraction(interaction, {
     embeds: [errorEmbed(message)],
     ephemeral: true,
+  });
+}
+
+export async function safeEditReply(
+  interaction: RepliableInteraction,
+  options: InteractionEditReplyOptions,
+): Promise<Message | null> {
+  try {
+    return await interaction.editReply(options);
+  } catch (error) {
+    if (isIgnorableDiscordError(error)) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+export async function editReplyWithUserFacingError(
+  interaction: RepliableInteraction,
+  error: unknown,
+): Promise<void> {
+  const message =
+    error instanceof UserFacingError
+      ? error.userMessage
+      : "Something went wrong. Please try again later.";
+
+  await safeEditReply(interaction, {
+    embeds: [errorEmbed(message)],
+    components: [],
   });
 }
 

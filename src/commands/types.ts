@@ -1,6 +1,9 @@
 import type {
   ChatInputCommandInteraction,
+  ContextMenuCommandBuilder,
+  MessageContextMenuCommandInteraction,
   RESTPostAPIChatInputApplicationCommandsJSONBody,
+  RESTPostAPIContextMenuApplicationCommandsJSONBody,
   SlashCommandBuilder,
   SlashCommandOptionsOnlyBuilder,
   SlashCommandSubcommandsOnlyBuilder,
@@ -13,7 +16,13 @@ export type SlashCommandHandler = (
   ctx: AppContext,
 ) => Promise<void>;
 
+export type MessageContextMenuCommandHandler = (
+  interaction: MessageContextMenuCommandInteraction,
+  ctx: AppContext,
+) => Promise<void>;
+
 export type SlashCommandDefinition = {
+  kind: "chatInput";
   name: string;
   builder:
     | SlashCommandBuilder
@@ -22,3 +31,13 @@ export type SlashCommandDefinition = {
   handler: SlashCommandHandler;
   toJSON: () => RESTPostAPIChatInputApplicationCommandsJSONBody;
 };
+
+export type MessageContextMenuCommandDefinition = {
+  kind: "messageContextMenu";
+  name: string;
+  builder: ContextMenuCommandBuilder;
+  handler: MessageContextMenuCommandHandler;
+  toJSON: () => RESTPostAPIContextMenuApplicationCommandsJSONBody;
+};
+
+export type CommandDefinition = SlashCommandDefinition | MessageContextMenuCommandDefinition;

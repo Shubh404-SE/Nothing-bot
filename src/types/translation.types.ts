@@ -23,7 +23,10 @@ export type ReactionTranslationContext = {
 
 export type SlashTranslationContext = {
   userId: string;
+  guildId: string | null;
   interactionId: string;
   text: string;
   targetLang: string;
+  applyCooldown: boolean;
+  applyDedupe: boolean;
 };

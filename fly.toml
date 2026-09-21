@@ -1,0 +1,18 @@
+# Fly.io (optional — uses monthly free credit, not unlimited)
+# https://fly.io/docs/languages-and-frameworks/node/
+app = "nothing-bot"
+primary_region = "sin"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  LOG_LEVEL = "info"
+
+[processes]
+  app = "node dist/src/index.js"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

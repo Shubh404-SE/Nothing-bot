@@ -2,6 +2,7 @@ export const CacheNamespace = {
   TranslationDedupe: "translation:dedupe",
   TranslationCooldown: "translation:cooldown",
   TranslationSlashDedupe: "translation:slash-dedupe",
+  TranslationResult: "translation:result",
 } as const;
 
 export type CacheNamespaceValue = (typeof CacheNamespace)[keyof typeof CacheNamespace];

@@ -6,7 +6,11 @@ import {
   featureDisabledEmbed,
   translationResultEmbed,
 } from "../../../discord/embeds.js";
-import { replyWithUserFacingError, safeReplyInteraction } from "../../../discord/replies.js";
+import {
+  editReplyWithUserFacingError,
+  safeEditReply,
+  safeReplyInteraction,
+} from "../../../discord/replies.js";
 import { runHandler } from "../../../shared/handler/run-handler.js";
 import { UserFacingError } from "../../../shared/errors/user-facing.error.js";
 
@@ -33,34 +37,44 @@ export async function handleTranslateSlash(
       }
 
       const text = interaction.options.getString("text", true);
-      const language = interaction.options.getString("language", true);
+      const languageOption = interaction.options.getString("language", false);
+
+      await interaction.deferReply({ ephemeral: true });
+
+      const targetLang =
+        languageOption ??
+        (await ctx.preferenceService.resolveTargetLanguage(
+          interaction.user.id,
+          interaction.guildId,
+        ));
 
       try {
         const result = await ctx.translationService.translateSlash({
           userId: interaction.user.id,
+          guildId: interaction.guildId,
           interactionId: interaction.id,
           text,
-          targetLang: language,
+          targetLang,
+          applyCooldown: true,
+          applyDedupe: true,
         });
 
-        await safeReplyInteraction(interaction, {
+        await safeEditReply(interaction, {
           embeds: [
             translationResultEmbed(result, {
               mode: "slash",
               speakerName: resolveSpeakerName(interaction),
             }),
           ],
-          ephemeral: true,
         });
       } catch (error) {
         if (error instanceof UserFacingError) {
-          await safeReplyInteraction(interaction, {
+          await safeEditReply(interaction, {
             embeds: [errorEmbed(error.userMessage)],
-            ephemeral: true,
           });
           return;
         }
-        await replyWithUserFacingError(interaction, error);
+        await editReplyWithUserFacingError(interaction, error);
       }
     },
   );

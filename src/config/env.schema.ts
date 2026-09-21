@@ -7,6 +7,8 @@ import {
   DEFAULT_TRANSLATION_COOLDOWN_TTL_SEC,
   DEFAULT_TRANSLATION_DEDUPE_TTL_SEC,
   DEFAULT_TRANSLATION_MAX_CONCURRENT,
+  DEFAULT_TRANSLATION_RESULT_CACHE_TTL_SEC,
+  DEFAULT_TRANSLATION_SLASH_COOLDOWN_TTL_SEC,
   DEFAULT_TRANSLATION_SLASH_DEDUPE_TTL_SEC,
   DEFAULT_TRANSLATION_TIMEOUT_MS,
 } from "./constants.js";
@@ -34,6 +36,8 @@ export const envSchema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   FEATURE_TRANSLATION_SLASH: booleanFromEnv(true),
   FEATURE_TRANSLATION_REACTION: booleanFromEnv(true),
+  FEATURE_TRANSLATION_CONTEXT_MENU: booleanFromEnv(true),
+  DATA_DIR: z.string().min(1).default("./data"),
   TRANSLATION_TIMEOUT_MS: z.coerce
     .number()
     .int()
@@ -69,6 +73,16 @@ export const envSchema = z.object({
     .int()
     .positive()
     .default(DEFAULT_TRANSLATION_SLASH_DEDUPE_TTL_SEC),
+  TRANSLATION_SLASH_COOLDOWN_TTL_SEC: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(DEFAULT_TRANSLATION_SLASH_COOLDOWN_TTL_SEC),
+  TRANSLATION_RESULT_CACHE_TTL_SEC: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(DEFAULT_TRANSLATION_RESULT_CACHE_TTL_SEC),
   CACHE_MAX_ENTRIES: z.coerce.number().int().positive().default(DEFAULT_CACHE_MAX_ENTRIES),
 });
 

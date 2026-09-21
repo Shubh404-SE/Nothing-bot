@@ -44,6 +44,10 @@ export function errorEmbed(message: string): EmbedBuilder {
   return new EmbedBuilder().setColor(0xed4245).setDescription(`⚠️ ${message}`);
 }
 
+export function infoEmbed(message: string): EmbedBuilder {
+  return new EmbedBuilder().setColor(COMPACT_ACCENT_COLOR).setDescription(message);
+}
+
 export function featureDisabledEmbed(featureName: string): EmbedBuilder {
   return errorEmbed(`${featureName} is currently disabled.`);
 }

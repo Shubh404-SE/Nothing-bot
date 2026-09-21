@@ -1,0 +1,16 @@
+[Unit]
+Description=Nothing Bot (Discord)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/nothing-bot
+EnvironmentFile=/home/ubuntu/nothing-bot/.env
+ExecStart=/usr/bin/node /home/ubuntu/nothing-bot/dist/src/index.js
+Restart=on-failure
+RestartSec=15
+
+[Install]
+WantedBy=multi-user.target
